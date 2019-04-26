@@ -1,6 +1,4 @@
 {
-  "extends": "kraftvaerk",
-  "rules": {
-    "prefer-const": 0
-  }
+    "root": true,
+    "extends": "@kraftvaerk/eslint-config"
 }

@@ -1,34 +1,40 @@
-'use strict';
+import del from 'del';
+import gulp from 'gulp';
+import log from 'fancy-log';
+import webpack from 'webpack';
+import config from '../config';
+import webpackConfig from '../../webpack.config';
 
-const gulp            = require('gulp');
-const plumber         = require('gulp-plumber');
-const clean           = require('gulp-rimraf');
-const webpack         = require('webpack');
-const gutil           = require('gulp-util');
-const conf            = require('../config');
-const webpackConfig   = require('../../webpack.config');
+const compiler = webpack(webpackConfig);
 
-gulp.task('scripts:clean', () => {
-    return gulp.src(conf.js.dest + '/*.{js,map,LICENSE}', { read: false })
-        .pipe(plumber())
-        .pipe(clean({force: true}))
-        .on('error', gutil.log);
-});
+function logStats(error, stats, done) {
+    if (error) {
+        console.error(error);
+        return;
+    }
 
-gulp.task('scripts', ['scripts:clean'], function(callback) {
-    webpack(webpackConfig, function(err, stats) {
-        if (err){
-            throw new gutil.PluginError('webpack', err);
-        }
+    log('[webpack:build] Completed\n' + stats.toString({
+        colors: true,
+        modules: false
+    }));
 
-        gutil.log('[webpack:build] Completed\n' + stats.toString({
-            colors: true,
-            modules: false,
-            children: false,
-            chunks: false,
-            chunkModules: false
-        }));
+    done();
+}
 
-        callback();
+function processScripts(done) {
+    compiler.run((error, stats) => {
+        logStats(error, stats, done);
     });
-});
+}
+
+export function watchScripts(done) {
+    compiler.watch(null, (error, stats) => {
+        logStats(error, stats, done);
+    });
+}
+
+function cleanScripts(done) {
+    return del(`${config.js.dest}/*.{js,map,LICENSE}`, done);
+}
+
+gulp.task('scripts', gulp.series(cleanScripts, processScripts));

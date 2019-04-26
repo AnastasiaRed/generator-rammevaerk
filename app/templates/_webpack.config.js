@@ -1,39 +1,66 @@
-const webpack      = require('webpack');
-const conf         = require('./<%= answers.projectName %>.Gulp/config');
-const path         = require('path');
-const production   = process.env.NODE_ENV === 'production';
+import path from 'path';
+import webpack from 'webpack';
+import UglifyJsPlugin from 'uglifyjs-webpack-plugin';
+import config from './<%= answers.projectName %>.Gulp/config';
 
-module.exports = {
+const production = process.env.NODE_ENV === 'production';
+const bundleFilename = '[name].bundle.js';
+
+export default {
+    mode: production ? 'production' : 'development',
     entry: {
-        '<%= answers.projectName %>': [conf.js.src + '/<%= answers.projectName %>/index.js']
+        '<%= answers.projectName %>': `${config.js.src}/<%= answers.projectName %>/index.js`
     },
     output: {
-        path: path.resolve(__dirname, conf.js.dest),
-        publicPath: conf.js.dest.replace(conf.baseDir, '') + '/',
-        filename: '[name].bundle.js',
+        path: path.resolve(__dirname, config.js.dest),
+        publicPath: `${config.js.dest.replace(config.baseDir, '')}/`,
+        filename: bundleFilename,
         chunkFilename: '[name].[chunkhash].chunk.js'
     },
-    devtool: production ? 'source-maps' : 'cheap-module-eval-source-map',
+    devtool: production ? 'source-map' : 'cheap-module-eval-source-map',
+    resolve: {
+        alias: {
+            '@': path.resolve(__dirname, config.js.src)
+        }
+    },
     module: {
         rules: [
             {
                 test: /\.js$/,
                 loader: 'babel-loader',
-                exclude: /node_modules/
+                options: {
+                    cacheDirectory: !production
+                },
+                include: [
+                    path.resolve(__dirname, config.js.src)
+                ]
             }
         ]
     },
+    optimization: {
+        minimizer: [
+            new UglifyJsPlugin({
+                sourceMap: true,
+                extractComments: true
+            })
+        ],
+        splitChunks: {
+            cacheGroups: {
+                vendor: {
+                    test: /node_modules/,
+                    name: '<%= answers.projectName %>.vendor',
+                    chunks: 'initial',
+                    filename: bundleFilename
+                }
+            }
+        }
+    },
     plugins: [
-        new webpack.EnvironmentPlugin({
-            NODE_ENV: 'development'
-        }),
         new webpack.ProvidePlugin({
-            'window.jQuery': 'jquery',
-            'window.$': 'jquery'
-        }),
-        ...production ? [new webpack.optimize.UglifyJsPlugin({
-            sourceMap: true,
-            extractComments: true
-        })] : []
+            $: 'jquery',
+            jQuery: 'jquery',
+            'window.$': 'jquery',
+            'window.jQuery': 'jquery'
+        })
     ]
 };

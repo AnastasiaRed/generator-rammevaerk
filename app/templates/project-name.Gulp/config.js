@@ -1,25 +1,20 @@
-'use strict';
+import pkg from '../package.json';
 
-const pkg         = require('../package.json');
-const baseDir     = './<%= answers.projectName %>.Website';
+const baseDir = './<%= answers.projectName %>.Website';
 
-module.exports = {
-    pkg: pkg,
-
-    baseDir: baseDir,
-
+export default {
+    pkg,
+    baseDir,
     html: {
-        dest: baseDir + '/Mockup',
-        src: baseDir + '/Mockup'
+        dest: `${baseDir}/Mockup`,
+        src: `${baseDir}/Mockup`
     },
-
     js: {
-        dest: baseDir + '/Content/Scripts',
-        src: baseDir + '/Scripts'
+        dest: `${baseDir}/Content/Scripts`,
+        src: `${baseDir}/Scripts`
     },
-
     css: {
-        dest: baseDir + '/Content/Styles',
-        src: baseDir + '/Styles'
+        dest: `${baseDir}/Content/Styles`,
+        src: `${baseDir}/Styles`
     }
 };

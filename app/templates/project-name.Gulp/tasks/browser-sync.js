@@ -1,25 +1,19 @@
-'use strict';
+import browserSync from 'browser-sync';
+import config from '../config';
 
-const gulp            = require('gulp');
-const browserSync     = require('browser-sync');
-const gutil           = require('gulp-util');
-const conf            = require('../config');
+const BROWSERSYNC_OPTIONS = {
+    logPrefix: config.pkg.name.toUpperCase(),
+    server: {
+        baseDir: config.baseDir
+    },
+    startPath: `./Mockup/${config.pkg.name}/index.html`
+};
 
-gulp.task('server', ['default'], () => {
-    browserSync({
-        logPrefix: gutil.colors.bold.white(conf.pkg.name.toUpperCase()),
-        server: {
-            baseDir: conf.baseDir
-        },
-        startPath: './Mockup/<%= answers.projectName %>/index.html',
-        index: 'index.html',
-        open: true,
-        directory: true,
-        ghostMode: {
-            click: true,
-            forms: true,
-            scroll: true
-        },
-        online: true
-    });
-});
+function serve(done) {
+    browserSync(BROWSERSYNC_OPTIONS);
+    done();
+}
+
+export default {
+    serve
+};
